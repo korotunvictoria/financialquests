@@ -1017,7 +1017,7 @@ if (task.type === 'info') {
             state.casePoints[state.currentCase] += pts;
             
             state.score += pts; 
-            saveProgress(); // Сохраняем сразу после ответа
+            saveProgress(); 
             render();
         };
     } else {
@@ -1182,17 +1182,31 @@ showModal(
 );
 }
 
+// --- ФОНОВАЯ АСИНХРОННАЯ ПРЕДЗАГРУЗКА КАРТИНОК ---
+function preloadImagesAsync() {
+    const imagesToPreload = [
+        'alina-cover.png', 'rules.png', 'pattern.jpg', 'pattern2.jpg',
+        'case1-cover.png', 'case2-cover.png', 'case3-cover.png', 'case4-cover.png', 'case5-cover.png',
+        'alina-situation1.png', 'alina-situation3.png', 'alina-situation4.png', 'alina-situation5.png'
+    ];
+    setTimeout(() => {
+        imagesToPreload.forEach(src => {
+            const img = new Image();
+            img.src = src;
+        });
+    }, 500); 
+}
+
 // === ИНИЦИАЛИЗАЦИЯ КУРСА С ПОДДЕРЖКОЙ SCORM ===
-window.addEventListener('load', () => {
+function bootstrapApp() {
     SCORM.init();
     const savedData = SCORM.get("cmi.suspend_data");
     
     if (savedData) {
         try {
             window.savedState = JSON.parse(savedData);
-            // Если есть сохраненный прогресс - показываем модалку возобновления
-            initShuffle(); // Перемешиваем на всякий случай, если пользователь выберет Начать Сначала
-            render();      // Отрисуем фон (обложку), чтобы экран не был черным
+            initShuffle(); 
+            render();      
             promptResume();
         } catch (e) {
             initShuffle();
@@ -1202,9 +1216,18 @@ window.addEventListener('load', () => {
         initShuffle();
         render();
     }
-});
+    
+    // Запускаем предзагрузку картинок в фоне уже ПОСЛЕ отрисовки интерфейса
+    preloadImagesAsync();
+}
 
-// Сохраняем статус и закрываем сессию при закрытии вкладки браузера
+// Запускаем как только DOM готов, чтобы не ждать загрузки тяжелых файлов
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', bootstrapApp);
+} else {
+    bootstrapApp();
+}
+
 window.addEventListener("beforeunload", function() {
     saveProgress();
     SCORM.finish();
