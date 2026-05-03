@@ -1,0 +1,645 @@
+:root {
+--base-dark: #1E2025;
+--surface: #2A2D35;
+--surface-pressed: #22252A;
+
+--copper: #DDA28D;
+--copper-glow: rgba(221, 162, 141, 0.4);
+--copper-dim: rgba(221, 162, 141, 0.15);
+
+--text-main: #EAECEF;
+--text-muted: #8E94A3;
+
+--val-correct: #4ADBB5;       /* Неоново-мятный */
+--val-correct-bg: rgba(74, 219, 181, 0.15);
+
+--val-wrong: #E55C5C;         /* Насыщенно-алый */
+--val-wrong-bg: rgba(229, 92, 92, 0.15);
+
+--font-ui: 'Manrope', sans-serif;
+
+/* УНИВЕРСАЛЬНЫЙ РАЗМЕР ШРИФТА ДЛЯ ВСЕГО ТЕКСТА (от 16px до 20px) */
+--font-size-body: clamp(16px, 2vh, 20px);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-ui); }
+
+body.scroll-fix {
+background-color: var(--base-dark); color: var(--text-main);
+height: 100svh; overflow: hidden;
+}
+
+#app-wrapper {
+position: relative; width: 100vw; height: 100svh;
+display: flex; align-items: center; justify-content: center; overflow: hidden;
+}
+
+.surreal-fog { position: fixed; border-radius: 50%; filter: blur(140px); z-index: 0; pointer-events: none;}
+.fog-1 { width: 70vh; height: 50vh; background: rgba(221, 162, 141, 0.12); top: 0%; left: -10%; }
+.fog-2 { width: 60vh; height: 60vh; background: rgba(74, 219, 181, 0.06); bottom: -10%; right: -10%; }
+
+#app { width: 100%; height: 100%; position: relative; z-index: 10; display: flex; flex-direction: column; }
+
+/* === ЦЕНТРИРОВАННЫЙ КОНТЕНТ (ДЛЯ ОБЛОЖКИ И ИТОГОВ) === */
+.content-centered {
+display: flex; flex-direction: column; justify-content: center; align-items: center;
+text-align: center; height: 100%; min-height: 100%; padding: 2vh 0;
+}
+.content-centered h1 {
+font-size: clamp(3vh, 5vh, 40px); font-weight: 800; margin-bottom: 2vh; line-height: 1.2;
+background: linear-gradient(135deg, #FFF, var(--copper));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.content-centered p { font-size: var(--font-size-body); line-height: 1.6; max-width: 800px; margin-bottom: 3vh; color: var(--text-muted); }
+.content-centered ul {
+text-align: left; margin: 0 auto 3vh auto; display: inline-block;
+font-size: var(--font-size-body); line-height: 1.6; color: var(--text-muted); padding-left: 20px;
+}
+.content-centered ul li { margin-bottom: 1.5vh; }
+
+/* Основная кнопка */
+.btn-surreal {
+background: var(--surface); color: var(--copper);
+border: 1px solid rgba(221, 162, 141, 0.4);
+padding: 2vh 4vh; font-size: var(--font-size-body); font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
+border-radius: 12px 18px 12px 20px; cursor: pointer; transition: all 0.3s ease;
+box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.1);
+}
+.btn-surreal:hover:not(:disabled) {
+background: var(--copper); color: var(--base-dark);
+box-shadow: 0 10px 25px var(--copper-glow), inset 0 -2px 5px rgba(0,0,0,0.2); transform: translateY(-2px);
+}
+.btn-surreal:disabled { opacity: 0.4; cursor: not-allowed; border-color: transparent; box-shadow: none; background: var(--surface-pressed); color: var(--text-muted); }
+.btn-surreal.pressed { background: var(--surface-pressed); color: var(--copper); box-shadow: inset 0 4px 10px rgba(0,0,0,0.6); transform: translateY(2px); border-top: 1px solid #000; }
+
+/* Второстепенная кнопка (Кнопка "Назад" / "К итогам") */
+.btn-secondary {
+background: transparent;
+color: var(--text-muted);
+border: none;
+box-shadow: none;
+padding: 1vh 2vh;
+}
+.btn-secondary:hover:not(:disabled) {
+background: transparent;
+color: var(--text-main);
+border: none;
+box-shadow: none;
+transform: none;
+}
+
+/* === СТРУКТУРА === */
+.task-layout {
+display: flex; align-items: center; justify-content: center;
+height: 100%; width: 100%; padding: 4vh; box-sizing: border-box;
+}
+.card-wrapper {
+position: relative; width: 100%; max-width: 1000px;
+height: 100%; max-height: 85vh;
+display: flex; justify-content: center;
+}
+
+/* === КАРТОЧКА === */
+.surreal-card {
+width: 100%; height: 100%; position: relative; z-index: 10;
+background: var(--surface);
+border-radius: 30px 40px 30px 50px / 40px 30px 50px 30px;
+border: 1px solid rgba(255,255,255,0.05); border-top: 1px solid rgba(221, 162, 141, 0.3); border-left: 1px solid rgba(221, 162, 141, 0.1);
+box-shadow: 0 40px 80px rgba(0,0,0,0.6), inset 0 0 30px rgba(0,0,0,0.3);
+padding: 4vh 5vh; display: flex; flex-direction: column; overflow: hidden;
+}
+
+.card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3vh; flex-shrink: 0; min-height: 4vh; }
+.points-badge { background: var(--surface-pressed); border: 1px solid var(--val-correct); padding: 1vh 2vh; border-radius: 12px 18px 12px 16px; font-weight: 700; font-size: clamp(14px, 1.8vh, 16px); color: var(--val-correct); box-shadow: inset 0 2px 5px rgba(0,0,0,0.5); opacity: 0; }
+
+.surreal-progress { display: flex; align-items: center; gap: 1vh; }
+.progress-node { width: 3.5vh; height: 3.5vh; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: var(--surface-pressed); border: 2px solid rgba(255,255,255,0.1); font-size: clamp(12px, 1.4vh, 16px); font-weight: 700; color: var(--text-muted); transition: 0.3s; box-shadow: inset 0 3px 6px rgba(0,0,0,0.5); }
+.progress-node.active { border-color: var(--copper); color: var(--copper); box-shadow: 0 0 15px var(--copper-glow), inset 0 2px 4px rgba(255,255,255,0.1); background: var(--surface); }
+.progress-node.success { border-color: var(--val-correct); color: var(--val-correct); box-shadow: 0 0 10px var(--val-correct-bg);}
+.progress-node.fail { border-color: var(--val-wrong); color: var(--val-wrong); box-shadow: 0 0 10px var(--val-wrong-bg);}
+.progress-node.clickable { cursor: pointer; }
+.progress-node.clickable:hover { transform: scale(1.15); box-shadow: 0 0 12px var(--copper-glow), inset 0 2px 4px rgba(255,255,255,0.2); border-color: var(--copper); }
+.progress-line { width: 1.5vh; height: 2px; background: rgba(255,255,255,0.1); }
+
+.close-btn { font-size: 3vh; color: var(--text-muted); cursor: pointer; transition: 0.3s; }
+.close-btn:hover { color: var(--copper); transform: rotate(90deg) scale(1.1); }
+
+.card-body {
+flex: 1 1 auto; min-height: 0;
+overflow-y: auto; padding-right: 2vh; display: flex; flex-direction: column; padding-bottom: 2vh;
+}
+.card-body::-webkit-scrollbar { width: 4px; }
+.card-body::-webkit-scrollbar-track { background: var(--surface-pressed); border-radius: 10px;}
+.card-body::-webkit-scrollbar-thumb { background-color: var(--copper-dim); border-radius: 10px; }
+
+/* Единый стиль для текста ситуации и задания */
+.task-desc { font-size: var(--font-size-body); line-height: 1.6; margin-bottom: 3vh; color: var(--text-main); }
+.task-desc b { color: var(--copper); font-weight: 700;}
+.options-container { display: flex; flex-direction: column; gap: 1.5vh; margin-bottom: 2vh;}
+
+/* === ИНФОГРАФИКА (КЕЙС 2) === */
+.info-grid {
+display: grid;
+grid-template-columns: 1fr 1fr;
+margin-top: 2.5vh;
+border-radius: 12px;
+}
+.info-cell {
+padding: 3vh 2vh;
+display: flex;
+flex-direction: column;
+align-items: center;
+text-align: center;
+gap: 1.5vh;
+}
+.info-cell svg {
+width: 4.5vh;
+height: 4.5vh;
+color: var(--copper);
+}
+.info-cell span {
+font-size: clamp(14px, 1.8vh, 18px);
+color: var(--text-main);
+line-height: 1.4;
+}
+/* Линии перекрестия */
+.info-cell.top-left { border-right: 1px solid rgba(255,255,255,0.1); border-bottom: 1px solid rgba(255,255,255,0.1); }
+.info-cell.top-right { border-bottom: 1px solid rgba(255,255,255,0.1); }
+.info-cell.bottom-left { border-right: 1px solid rgba(255,255,255,0.1); }
+
+/* === ТАКТИЛЬНЫЕ ОТВЕТЫ === */
+.tactile-option {
+width: 100%; padding: 2vh 2.5vh; display: flex;
+align-items: center;
+gap: 2vh;
+background: var(--surface); border: 1px solid rgba(255,255,255,0.05);
+border-radius: 16px 20px 16px 22px; cursor: pointer;
+font-size: var(--font-size-body); color: var(--text-muted); line-height: 1.5;
+transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.tactile-option:hover { background: rgba(255,255,255,0.05); color: var(--text-main); }
+
+/* === ИНДИКАТОРЫ (РАДИО И ЧЕКБОКСЫ) === */
+.custom-indicator {
+flex-shrink: 0;
+width: 22px;
+height: 22px;
+background: transparent;
+border: 2px solid rgba(255,255,255,0.3);
+display: flex; align-items: center; justify-content: center;
+transition: border-color 0.2s ease;
+}
+.type-radio .custom-indicator { border-radius: 50%; }
+.type-checkbox .custom-indicator { border-radius: 4px; }
+
+.custom-indicator::after {
+content: ''; display: block;
+transform: scale(0);
+transition: 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.type-radio .custom-indicator::after {
+width: 10px; height: 10px; border-radius: 50%;
+background-color: transparent;
+}
+
+.type-checkbox .custom-indicator::after {
+width: 6px; height: 12px;
+border: solid transparent;
+border-width: 0 2px 2px 0;
+transform: rotate(45deg) scale(0);
+margin-bottom: 2px;
+}
+
+/* === СОСТОЯНИЯ === */
+.tactile-option.selected {
+background: var(--surface-pressed); border-color: var(--copper); color: var(--text-main);
+box-shadow: inset 0 4px 15px rgba(0,0,0,0.4);
+}
+.tactile-option.selected .custom-indicator { border-color: var(--copper); }
+.tactile-option.selected.type-radio .custom-indicator::after { background-color: var(--copper); transform: scale(1); }
+.tactile-option.selected.type-checkbox .custom-indicator::after { border-color: var(--copper); transform: rotate(45deg) scale(1); }
+
+.tactile-option.correct {
+border-color: var(--val-correct); background: var(--surface-pressed); color: var(--text-main);
+pointer-events: none; box-shadow: inset 0 0 15px var(--val-correct-bg);
+}
+.tactile-option.correct .custom-indicator { border-color: var(--val-correct); }
+.tactile-option.correct.type-radio .custom-indicator::after { background-color: var(--val-correct); transform: scale(1); }
+.tactile-option.correct.type-checkbox .custom-indicator::after { border-color: var(--val-correct); transform: rotate(45deg) scale(1); }
+
+.tactile-option.wrong {
+border-color: var(--val-wrong); background: var(--surface-pressed); color: var(--text-main);
+pointer-events: none; box-shadow: inset 0 0 15px var(--val-wrong-bg);
+}
+.tactile-option.wrong .custom-indicator { border-color: var(--val-wrong); }
+.tactile-option.wrong.type-radio .custom-indicator::after { background-color: var(--val-wrong); transform: scale(1); }
+.tactile-option.wrong.type-checkbox .custom-indicator::after { border-color: var(--val-wrong); transform: rotate(45deg) scale(1); }
+
+/* === ПОЛЕ ВВОДА ЧИСЕЛ === */
+input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+.input-wrapper {
+display: flex;
+align-items: center;
+gap: 1.5vh;
+}
+
+input[type="number"] {
+width: 150px;
+padding: 2.5vh;
+background: var(--surface-pressed);
+border: 1px solid rgba(255,255,255,0.1);
+border-radius: 12px 18px 12px 16px;
+
+/* Сделали размер и толщину как у остального текста */
+font-size: var(--font-size-body);
+font-weight: normal;
+
+color: var(--copper);
+text-align: center;
+outline: none;
+transition: 0.3s;
+box-shadow: inset 0 4px 10px rgba(0,0,0,0.5);
+}
+
+input[type="number"]:focus { border-color: var(--copper); box-shadow: inset 0 4px 10px rgba(0,0,0,0.5), 0 0 15px var(--copper-dim); }
+input[type="number"].correct { border-color: var(--val-correct); color: var(--val-correct); }
+input[type="number"].wrong { border-color: var(--val-wrong); color: var(--val-wrong); }
+
+/* Знак процента */
+.input-suffix {
+font-size: var(--font-size-body);
+font-weight: normal;
+color: var(--copper);
+transition: color 0.3s ease;
+}
+
+/* Синхронизируем цвет знака % с правильностью ответа */
+.input-wrapper:has(input.correct) .input-suffix { color: var(--val-correct); }
+.input-wrapper:has(input.wrong) .input-suffix { color: var(--val-wrong); }
+
+/* Навигация (Подвал) */
+.nav-controls {
+display: flex; justify-content: flex-end; align-items: center; gap: 2vh; flex-wrap: wrap;
+margin-top: 2vh; padding-top: 3vh; border-top: 1px solid rgba(255,255,255,0.05); flex-shrink: 0;
+}
+.nav-controls.center-align { justify-content: center; border-top: none; padding-top: 0; margin-top: 0;}
+
+.exp-title { font-size: clamp(20px, 3vh, 30px); font-weight: 800; color: var(--copper); margin-bottom: 2vh; }
+/* Единый стиль для текста разбора */
+.exp-text { font-size: var(--font-size-body); line-height: 1.6; color: var(--text-main); }
+
+/* === ЭКРАН ПРАВИЛ (2 колонки) === */
+.rules-split {
+display: flex;
+width: 100%;
+height: 100%;
+align-items: center;
+justify-content: center;
+gap: 4vh;
+}
+.rules-text {
+flex: 1;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+text-align: center;
+}
+.rules-text h1 {
+font-size: clamp(3vh, 5vh, 40px); font-weight: 800; margin-bottom: 2vh; line-height: 1.2;
+background: linear-gradient(135deg, #FFF, var(--copper));
+-webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.rules-text p {
+font-size: var(--font-size-body); line-height: 1.6; max-width: 800px; margin-bottom: 3vh; color: var(--text-muted);
+}
+.rules-image {
+flex: 1;
+display: flex;
+justify-content: center;
+align-items: center;
+min-height: 0;
+}
+.rules-image img {
+max-width: 100%;
+max-height: 100%;
+object-fit: contain;
+}
+.rules-image-mobile {
+display: none;
+}
+
+/* === НОВЫЙ МАКЕТ ДЛЯ ОБЛОЖЕК КЕЙСОВ === */
+.surreal-card.case-cover-layout {
+    padding: 0 !important; 
+}
+.surreal-card.case-cover-layout .card-header {
+    padding: 4vh 5vh 0 5vh; 
+    margin-bottom: 0;
+    min-height: auto;
+    position: relative;
+    z-index: 10;
+}
+.surreal-card.case-cover-layout .card-body {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden; 
+}
+.case-cover-top {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 0 5vh;
+    z-index: 5;
+}
+.case-cover-bottom {
+    flex: 1;
+    display: flex;
+    align-items: flex-end; 
+    min-height: 0; 
+    width: 100%;
+    padding: 0 5vh;
+    z-index: 5;
+}
+.case-cover-bottom.align-right { justify-content: flex-end; }
+.case-cover-bottom.align-left { justify-content: flex-start; }
+.case-cover-bottom img {
+    max-width: 60%; 
+    max-height: 100%;
+    object-fit: contain;
+    object-position: bottom;
+}
+
+/* === АНИМАЦИИ ДЛЯ ОБЛОЖЕК === */
+
+/* 1. Влет текста слева (Кейс № / Заголовок обложки) - длится 1.2s */
+@keyframes slideInLeftSmooth {
+    0% { opacity: 0; transform: translateX(-100px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+.slide-in-left {
+    animation: slideInLeftSmooth 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+}
+
+/* 2. Влет текста справа (Название кейса / Логлайн обложки) - длится 1.2s */
+@keyframes slideInRightSmooth {
+    0% { opacity: 0; transform: translateX(100px); }
+    100% { opacity: 1; transform: translateX(0); }
+}
+.slide-in-right {
+    animation: slideInRightSmooth 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+}
+
+/* 3. Влет картинок с углов (для кейсов - без задержки, одновременно с текстами) */
+@keyframes flyInRight {
+    0% { transform: translate(50%, 50%); opacity: 0; }
+    100% { transform: translate(0, 0); opacity: 1; }
+}
+@keyframes flyInLeft {
+    0% { transform: translate(-50%, 50%); opacity: 0; }
+    100% { transform: translate(0, 0); opacity: 1; }
+}
+.fly-in-right img {
+    opacity: 0;
+    animation: flyInRight 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+.fly-in-left img {
+    opacity: 0;
+    animation: flyInLeft 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* 4. Влет картинки снизу (для главной обложки - без задержки, одновременно с текстом) */
+@keyframes flyInBottom {
+    0% { transform: translateY(100px); opacity: 0; }
+    100% { transform: translateY(0); opacity: 1; }
+}
+.fly-in-bottom {
+    animation: flyInBottom 1.2s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    opacity: 0;
+}
+
+/* Вынесенные классы задержек для кнопок, чтобы ими мог управлять скрипт */
+@keyframes fadeInButtons {
+    0% { opacity: 0; transform: translateY(15px); pointer-events: none; }
+    100% { opacity: 1; transform: translateY(0); pointer-events: auto; }
+}
+.anim-fade-buttons {
+    opacity: 0;
+    animation: fadeInButtons 0.8s ease-out forwards;
+    animation-delay: 1.7s;
+}
+.anim-fade-buttons-fast {
+    opacity: 0;
+    animation: fadeInButtons 0.6s ease-out forwards;
+    animation-delay: 0.6s;
+}
+
+/* Пульсация (увеличение масштаба и медное свечение, без смены цвета заливки) */
+@keyframes doublePulseSmooth7s {
+    0%, 30%, 100% {
+        box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.1);
+        transform: translateY(0) scale(1);
+    }
+    /* Первый удар */
+    8% { 
+        box-shadow: 0 12px 30px var(--copper-glow), 0 0 20px var(--copper-dim), inset 0 2px 4px rgba(255,255,255,0.1);
+        transform: translateY(-2px) scale(1.04);
+    }
+    /* Спад между ударами */
+    15% { 
+        box-shadow: 0 8px 20px rgba(0,0,0,0.4), inset 0 2px 4px rgba(255,255,255,0.1);
+        transform: translateY(0) scale(1);
+    }
+    /* Второй удар */
+    22% { 
+        box-shadow: 0 12px 30px var(--copper-glow), 0 0 20px var(--copper-dim), inset 0 2px 4px rgba(255,255,255,0.1);
+        transform: translateY(-2px) scale(1.04);
+    }
+}
+
+.btn-pulse-7s {
+    animation: doublePulseSmooth7s 7s infinite ease-in-out;
+    /* Задержка 2s, чтобы первый "тун-тун" случился сразу после того как кнопки полностью появились */
+    animation-delay: 2s; 
+}
+
+/* =========================================
+ВНУТРЕННИЕ АНИМАЦИИ (КАСКАД И ПОП-ЭФФЕКТЫ)
+========================================= */
+
+/* Плавный подъем (для текстов, списков и блоков) */
+@keyframes fadeInUpSmooth {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up {
+    opacity: 0;
+    animation: fadeInUpSmooth 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Задержки для каскадного появления */
+.delay-1 { animation-delay: 0.15s; }
+.delay-2 { animation-delay: 0.3s; }
+.delay-3 { animation-delay: 0.45s; }
+.delay-4 { animation-delay: 0.6s; }
+.delay-5 { animation-delay: 0.75s; }
+.delay-6 { animation-delay: 0.9s; }
+
+/* Плавное проявление картинок с легким увеличением */
+@keyframes imageRevealSmooth {
+    0% { opacity: 0; transform: scale(0.95); }
+    100% { opacity: 1; transform: scale(1); }
+}
+.image-reveal {
+    opacity: 0;
+    animation: imageRevealSmooth 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* Отскок (Zoom In Bounce) для крупных цифр результата */
+@keyframes scorePop {
+    0% { opacity: 0; transform: scale(0.5); }
+    60% { opacity: 1; transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
+}
+.score-pop {
+    opacity: 0;
+    animation: scorePop 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* Поп-эффект (Подпрыгивание) для бейджа баллов */
+@keyframes badgePop {
+    0% { opacity: 0; transform: scale(0.5); }
+    50% { opacity: 1; transform: scale(1.1); }
+    100% { opacity: 1; transform: scale(1); }
+}
+.points-badge.visible { opacity: 1; }
+.points-badge.badge-pop {
+    animation: badgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+/* =========================================
+МОБИЛЬНАЯ АДАПТАЦИЯ
+========================================= */
+@media (max-width: 768px), (max-height: 650px) {
+body.scroll-fix { height: auto; min-height: 100svh; overflow: auto; }
+#app-wrapper { height: auto; min-height: 100svh; overflow: visible; padding: 2vh 0; }
+#app { height: auto; overflow: visible;}
+
+.task-layout { padding: 1vh 2vh; align-items: flex-start;}
+.card-wrapper { max-height: none; height: auto; margin-top: 6vh; margin-bottom: 4vh; }
+
+.surreal-card { height: auto; min-height: 60vh; padding: 4vh 3vh 3vh 3vh; border-radius: 20px; }
+
+.card-body { overflow-y: visible; flex: none; padding-right: 0; padding-left: 0; }
+
+.card-header {
+flex-direction: column-reverse;
+gap: 2vh;
+align-items: center;
+padding-right: 0;
+margin-top: 1vh;
+}
+
+.surreal-progress {
+display: flex;
+gap: 6px;
+flex-wrap: wrap;
+}
+.progress-node { width: 28px; height: 28px; font-size: 12px; min-width: 28px;}
+.progress-line { width: 10px; min-width: 10px;}
+
+.nav-controls {
+justify-content: center;
+flex-direction: column;
+gap: 1.5vh;
+}
+.btn-surreal {
+width: 100%;
+text-align: center;
+order: 1;
+}
+.btn-secondary {
+width: 100%;
+order: 2;
+font-size: clamp(14px, 1.8vh, 16px);
+padding: 2vh;
+}
+
+.close-btn {
+position: absolute;
+top: 2.5vh;
+right: 3vh;
+z-index: 50;
+}
+
+.info-cell { padding: 1.5vh 1vh; }
+.info-cell span { font-size: 13px; }
+.info-cell svg { width: 4vh; height: 4vh; }
+
+.rules-split {
+flex-direction: column;
+height: auto;
+gap: 2vh;
+}
+.rules-text, .rules-image {
+flex: none;
+width: 100%;
+}
+.rules-image {
+display: none; 
+}
+.rules-image-mobile {
+display: flex; 
+justify-content: center;
+width: 100%;
+margin-top: 2vh;
+padding-bottom: 2vh;
+}
+.rules-image-mobile img {
+max-height: 35vh;
+width: auto;
+object-fit: contain;
+}
+
+.surreal-card.case-cover-layout {
+    height: auto !important;
+    min-height: 60vh !important;
+}
+.surreal-card.case-cover-layout .card-header {
+    padding: 0; 
+}
+.surreal-card.case-cover-layout .card-body {
+    overflow-y: auto; 
+    display: block; 
+}
+.case-cover-top {
+    flex: none;
+    padding: 6vh 3vh 3vh 3vh; 
+}
+.case-cover-bottom {
+    flex: none;
+    display: block;
+    width: 100%;
+    padding: 0 3vh 2vh 3vh;
+    text-align: center;
+}
+.case-cover-bottom.align-right, .case-cover-bottom.align-left {
+    justify-content: center; 
+}
+.case-cover-bottom img {
+    max-height: 35vh;
+    max-width: 100%;
+    margin: 0 auto;
+    object-position: bottom center;
+}
+}
