@@ -12,13 +12,18 @@ const SCORM = {
         }
     },
     getAPI: function(win) {
-        let attempts = 0;
-        while (win.API == null && win.parent != null && win.parent != win) {
-            attempts++;
-            if (attempts > 7) return null;
-            win = win.parent;
+        for (let attempts = 0; win && attempts <= 7; attempts++) {
+            try {
+                if (win.API != null) return win.API;
+                if (win.parent === win) break;
+                win = win.parent;
+            } catch (error) {
+                if (error.name !== 'SecurityError') throw error;
+                // A cross-origin host cannot expose its SCORM API to this frame.
+                return null;
+            }
         }
-        return win.API;
+        return null;
     },
     set: function(param, value) {
         if (this.api) this.api.LMSSetValue(param, value);
